@@ -1,0 +1,92 @@
+---
+- hosts: all
+  become: yes
+  gather_facts: no
+  tasks:
+
+  # - name: Update base packages
+  #   apt: name=* state=latest update_cache=yes
+
+  # - name: install kernel devel packages to enable VirtualBox guest modules
+  #   apt: name={{ item }} state=installed update_cache=yes
+  #   with_items:
+  #     - gcc
+  #     - make
+  #     - perl
+  #     - kernel-devel
+
+  # - name: install i3 and prereqs
+  #   apt: name={{ item }} state=installed
+  #   with_items:
+  #     - xorg-x11-server-Xorg
+  #     - xorg-x11-drv-vmware
+  #     - xorg-x11-drv-vmmouse
+  #     - xorg-x11-drv-evdev
+  #     - mesa-dri-drivers
+  #     - lightdm
+  #     - xorg-x11-xinit-session
+  #     - dejavu-sans-fonts
+  #     - dejavu-sans-mono-fonts
+  #     - dejavu-serif-fonts
+  #     - i3
+  #     - i3status
+  #     - lilyterm
+
+  # - name: install basic tools
+  #   yum: name={{ item }} state=installed update_cache=yes
+  #   with_items:
+  #     - git
+  #     - vim
+
+  # - name: Set graphical runlevel
+  #   command: systemctl set-default graphical.target
+
+  - name: Add group john
+    group: name=john
+
+  - name: Add user john
+    user: 
+      name: john
+      group: john
+      groups: admin
+      password: $1$5Qm9QRb8$xGUZcvrwJGcIJ4cK0j7t8.   #md5('password')
+      shell: /bin/bash
+
+  - name: Copy some files to root filesystem
+    copy: src=root/ dest=/
+
+
+- hosts: all
+  become: yes
+  become_user: john
+  gather_facts: no
+  tasks:
+
+  - name: Clone config repo
+    git:
+      repo: https://JLofgren@bitbucket.org/JLofgren/config.git
+      dest: /home/john/git/bitbucket.org/JLofgren/config
+
+  - name: check for original bashrc backup
+    stat:
+      path: /home/john/.bashrc.bak
+    register: bashrc_bak_stat
+
+  - name: initialize config idempotent block
+    block:
+
+      - name: check for bashrc
+        stat:
+          path: /home/john/.bashrc
+        register: bashrc_stat
+
+      - name: copy original bashrc to backup
+        command: mv /home/john/.bashrc /home/john/.bashrc.bak
+        when: bashrc_stat.stat.exists
+
+      - name: make config links
+        command: ./make_links_in_home.sh
+        args:
+          chdir: /home/john/git/bitbucket.org/JLofgren/config
+
+    when: not bashrc_bak_stat.stat.exists
