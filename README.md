@@ -17,6 +17,10 @@ Keep your VirtualBox and guest additions in sync using a vagrant plugin
 
     vagrant plugin install vagrant-vbguest
 
+To enable automated reload during provisioning:
+
+    vagrant plugin install vagrant-reload
+
 To get GUI programs from WSL:
 
 * Install Xming server in windows and start it

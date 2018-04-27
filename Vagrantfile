@@ -55,8 +55,8 @@ Vagrant.configure("2") do |config|
     vb.gui = true
   
     # Customize the amount of memory on the VM:
-    vb.memory = 512
-    vb.cpus = 1
+    vb.memory = 4096
+    vb.cpus = 2
     vb.name = "vagrant-ubuntu-minimal-i3"
     vb.customize ["modifyvm", :id, "--vram", "16"]
     vb.customize ['modifyvm', :id, '--clipboard', 'bidirectional']
@@ -69,7 +69,7 @@ Vagrant.configure("2") do |config|
     vb.customize [ "modifyvm", :id, "--uartmode1", "disconnected" ]
 
   end
-  
+
   # View the documentation for the provider you are using for more
   # information on available options.
 
@@ -107,5 +107,8 @@ Vagrant.configure("2") do |config|
     ansible.playbook = "playbook.yml"
     ansible.verbose = "-v"
   end
+
+  #requires vagrant-reload plugin
+  config.vm.provision :reload
 
 end
